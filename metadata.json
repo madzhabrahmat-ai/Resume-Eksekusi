@@ -1,0 +1,5 @@
+{
+  "name": "Resume Permohonan Eksekusi",
+  "description": "An application to generate a summary for an execution request for a civil case at the Bandung District Court using Gemini.",
+  "requestFramePermissions": []
+}
