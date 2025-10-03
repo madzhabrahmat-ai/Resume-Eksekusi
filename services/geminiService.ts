@@ -90,11 +90,14 @@ export async function generateResume(details: CaseDetails): Promise<string> {
         RESUME PERKARA EKSEKUSI
 
         Telah membaca :
-        1. Surat permohonan pemohon eksekusi tanggal ${formattedDate} dari ${applicant}, yang pada pokoknya memohon Ketua Pengadilan Negeri Bandung untuk melaksanakan eksekusi berdasarkan Sertipikat Hak Tanggungan Nomor ${d.shtNumber} tanggal ${d.shtDate}, memohon supaya ${d.executionRespondent} datang menghadap Ketua Pengadilan Negeri Bandung untuk dilakukan peneguran/aanmaning oleh Ketua tersebut, agar mereka termohon eksekusi dalam waktu 8 (delapan) hari sejak tanggal peneguran tersebut segera membayar kewajiban hutang kepada Pemohon Eksekusi;
+        1. Surat permohonan pemohon eksekusi tanggal ${formattedDate} dari ${applicant}, yang pada pokoknya memohon Ketua Pengadilan Negeri Bandung untuk melaksanakan eksekusi berdasarkan Sertipikat Hak Tanggungan Nomor ${d.shtNumber} tanggal ${d.shtDate}, memohon supaya ${d.executionRespondent} datang menghadap Ketua Pengadilan Negeri Bandung untuk dilakukan peneguran/aanmaning oleh Ketua tersebut, agar mereka termohon eksekusi dalam waktu 8 (delapan) hari sejak tanggal peneguran tersebut segera membayar kewajiban hutang kepada Pemohon Eksekusi, dalam perkara antara:
+        ${d.executionApplicant}, sebagai Pemohon Eksekusi;
+        Melawan
+        ${d.executionRespondent}, sebagai Termohon Eksekusi;
 
         2. Berkas Perkara Perdata:
         a. Sertipikat Hak Tanggungan Nomor ${d.shtNumber} tanggal ${d.shtDate};
-        b. Akta Pemberian Hak Tanggungan Nomor ${d.aphtNumber} tanggal ${d.aphtDate}
+        b. Akta Pemberian Hak Tanggungan Nomor ${d.aphtNumber} tanggal ${d.aphtDate};
 
         3. Telaah Panitera Muda Perdata (terhadap berkas perkara):
         - Bahwa objek hak tanggungan berupa: ${d.htObject};
@@ -106,20 +109,26 @@ export async function generateResume(details: CaseDetails): Promise<string> {
         Panitera Muda Perdata,
 
 
+
+
         ${d.panmudName}
 
         4. Hasil Penelaahan Panitera:
-        [Telaah Panitera]
+        [Buat telaah Panitera dalam bentuk poin-poin/bullet list yang diawali dengan tanda "- ". Telaah harus relevan dengan jenis eksekusi ini dan menyimpulkan bahwa permohonan dapat dikabulkan.]
 
         ${paniteraTitle}
+
+
 
 
         ${paniteraName}
 
         5. Pertimbangan Ketua Pengadilan Negeri Bandung:
-        [Telaah KPN]
+        [Buat pertimbangan Ketua Pengadilan Negeri Bandung dalam bentuk poin-poin/bullet list yang diawali dengan tanda "- ". Pertimbangan harus menyetujui telaah Panitera dan mengarah pada penetapan hari aanmaning.]
 
         Ketua Pengadilan Negeri Bandung,
+
+
 
 
         ${d.kpnName}
@@ -145,7 +154,10 @@ export async function generateResume(details: CaseDetails): Promise<string> {
         RESUME PERKARA EKSEKUSI
 
         Telah membaca :
-        1. Surat permohonan pemohon eksekusi tanggal ${formattedDate} dari ${applicant}, yang pada pokoknya memohon Ketua Pengadilan Negeri Bandung untuk melaksanakan eksekusi berdasarkan Grose Risalah Lelang Nomor ${d.lelangNumber} tanggal ${d.lelangDate}, memohon supaya ${d.executionRespondent} datang menghadap Ketua Pengadilan Negeri Bandung untuk dilakukan peneguran/aanmaning oleh Ketua tersebut, agar mereka termohon eksekusi dalam waktu 8 (delapan) hari sejak tanggal peneguran tersebut segera mengosongkan dan menyerahkan objek yang telah laku di lelang kepada Pemohon Eksekusi;
+        1. Surat permohonan pemohon eksekusi tanggal ${formattedDate} dari ${applicant}, yang pada pokoknya memohon Ketua Pengadilan Negeri Bandung untuk melaksanakan eksekusi berdasarkan Grose Risalah Lelang Nomor ${d.lelangNumber} tanggal ${d.lelangDate}, memohon supaya ${d.executionRespondent} datang menghadap Ketua Pengadilan Negeri Bandung untuk dilakukan peneguran/aanmaning oleh Ketua tersebut, agar mereka termohon eksekusi dalam waktu 8 (delapan) hari sejak tanggal peneguran tersebut segera mengosongkan dan menyerahkan objek yang telah laku di lelang kepada Pemohon Eksekusi, dalam perkara antara:
+        ${d.executionApplicant}, sebagai Pemohon Eksekusi;
+        Melawan
+        ${d.executionRespondent}, sebagai Termohon Eksekusi;
 
         2. Berkas Perkara Perdata:
         a. Grose Risalah Lelang Nomor ${d.lelangNumber} tanggal ${d.lelangDate};
@@ -159,20 +171,26 @@ export async function generateResume(details: CaseDetails): Promise<string> {
         Panitera Muda Perdata,
 
 
+
+
         ${d.panmudName}
 
         4. Hasil Penelaahan Panitera:
-        [Telaah Panitera]
+        [Buat telaah Panitera dalam bentuk poin-poin/bullet list yang diawali dengan tanda "- ". Telaah harus relevan dengan jenis eksekusi ini dan menyimpulkan bahwa permohonan dapat dikabulkan.]
 
         ${paniteraTitle}
+
+
 
 
         ${paniteraName}
 
         5. Pertimbangan Ketua Pengadilan Negeri Bandung:
-        [Telaah KPN]
+        [Buat pertimbangan Ketua Pengadilan Negeri Bandung dalam bentuk poin-poin/bullet list yang diawali dengan tanda "- ". Pertimbangan harus menyetujui telaah Panitera dan mengarah pada penetapan hari aanmaning.]
 
         Ketua Pengadilan Negeri Bandung,
+
+
 
 
         ${d.kpnName}
@@ -212,7 +230,10 @@ export async function generateResume(details: CaseDetails): Promise<string> {
         RESUME PERKARA EKSEKUSI
 
         Telah membaca :
-        1. Surat permohonan pemohon eksekusi tanggal ${formattedDate} dari ${applicant}, yang pada pokoknya memohon Ketua Pengadilan Negeri Bandung untuk melaksanakan eksekusi Putusan Pengadilan Negeri Bandung Nomor ${d.pnNumber} tanggal ${d.pnDate} ${putusanJo}, yang telah mempunyai kekuatan hukum tetap, memohon supaya ${d.executionRespondent} datang menghadap Ketua Pengadilan Negeri Bandung untuk dilakukan peneguran/aanmaning oleh Ketua tersebut, agar mereka termohon eksekusi dalam waktu 8 (delapan) hari sejak tanggal peneguran tersebut segera melaksanakan putusan;
+        1. Surat permohonan pemohon eksekusi tanggal ${formattedDate} dari ${applicant}, yang pada pokoknya memohon Ketua Pengadilan Negeri Bandung untuk melaksanakan eksekusi Putusan Pengadilan Negeri Bandung Nomor ${d.pnNumber} tanggal ${d.pnDate} ${putusanJo}, yang telah mempunyai kekuatan hukum tetap, memohon supaya ${d.executionRespondent} datang menghadap Ketua Pengadilan Negeri Bandung untuk dilakukan peneguran/aanmaning oleh Ketua tersebut, agar mereka termohon eksekusi dalam waktu 8 (delapan) hari sejak tanggal peneguran tersebut segera melaksanakan putusan, dalam perkara antara:
+        ${d.executionApplicant}, sebagai Pemohon Eksekusi;
+        Melawan
+        ${d.executionRespondent}, sebagai Termohon Eksekusi;
 
         2. Berkas Perkara Perdata:
         ${berkasPerkara}
@@ -222,26 +243,34 @@ export async function generateResume(details: CaseDetails): Promise<string> {
         - Bahwa Pemohon Eksekusi telah melampirkan berkas berupa putusan-putusan sebagaimana di atas dan setelah dilakukan pengecekan pada berkas bundel A bahwa fotocopy putusan-putusan tersebut sesuai dengan aslinya;
         - Bahwa putusan perkara yang dimohonkan eksekusi tersebut telah memiliki kekuatan hukum yang tetap;
         - Bahwa putusan perkara tersebut bersifat penghukuman (condemnatoir), ${d.verdict};
+        - Bahwa dalam amar putusan telah dilakukan penyitaan jaminan (conservatoir beslaag); (jika dilakukan sita jaminan)
+        - Bahwa obyek perkara tersebut berada dalam wilayah hukum Pengadilan Negeri Bandung;
         - Bahwa Termohon Eksekusi hingga saat ini tidak melaksanakan isi putusan tersebut secara sukarela;
         - Bahwa berdasarkan penelitian terhadap data-data keadaan perkara didalam SIPP maupun di dalam register perkara, tidak ditemukan upaya-upaya hukum yang dilakukan lagi terkait perkara tersebut.
 
         Panitera Muda Perdata,
 
 
+
+
         ${d.panmudName}
 
         4. Hasil Penelaahan Panitera:
-        [Telaah Panitera]
+        [Buat telaah Panitera dalam bentuk poin-poin/bullet list yang diawali dengan tanda "- ". Telaah harus relevan dengan jenis eksekusi ini dan menyimpulkan bahwa permohonan dapat dikabulkan.]
 
         ${paniteraTitle}
+
+
 
 
         ${paniteraName}
 
         5. Pertimbangan Ketua Pengadilan Negeri Bandung:
-        [Telaah KPN]
+        [Buat pertimbangan Ketua Pengadilan Negeri Bandung dalam bentuk poin-poin/bullet list yang diawali dengan tanda "- ". Pertimbangan harus menyetujui telaah Panitera dan mengarah pada penetapan hari aanmaning.]
 
         Ketua Pengadilan Negeri Bandung,
+
+
 
 
         ${d.kpnName}

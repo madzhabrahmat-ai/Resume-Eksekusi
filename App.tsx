@@ -270,6 +270,7 @@ const App: React.FC = () => {
               resume={generatedResume} 
               isLoading={isLoading}
               error={error}
+              caseDetails={caseDetails}
             />
           </div>
         </div>

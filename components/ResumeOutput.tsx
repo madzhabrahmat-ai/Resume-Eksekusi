@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Packer, Document, Paragraph, TextRun, AlignmentType } from 'docx';
+import { Packer, Document, Paragraph, TextRun, AlignmentType, Numbering, Indent } from 'docx';
 import saveAs from 'file-saver';
 import { CopyIcon, CheckIcon, WarningIcon, SaveIcon } from './Icons';
+import type { CaseDetails } from '../types';
+import { caseTypeLabels } from '../types';
+
 
 interface ResumeOutputProps {
   resume: string;
   isLoading: boolean;
   error: string | null;
+  caseDetails: CaseDetails;
 }
 
-const ResumeOutput: React.FC<ResumeOutputProps> = ({ resume, isLoading, error }) => {
+const ResumeOutput: React.FC<ResumeOutputProps> = ({ resume, isLoading, error, caseDetails }) => {
     const [isCopied, setIsCopied] = useState(false);
+
+    // This regex finds lines that are entirely bolded with markdown (e.g., "**TITLE**")
+    // and removes the asterisks. The 'g' flag ensures all such lines are affected,
+    // and 'm' allows '^' and '$' to match the start/end of lines.
+    const cleanedResume = resume.replace(/^\s*\*\*(.*)\*\*\s*$/gm, '$1');
 
     useEffect(() => {
         if(isCopied){
@@ -20,15 +29,20 @@ const ResumeOutput: React.FC<ResumeOutputProps> = ({ resume, isLoading, error })
     }, [isCopied]);
 
     const handleCopy = () => {
-        if (resume) {
-            navigator.clipboard.writeText(resume);
+        if (cleanedResume) {
+            navigator.clipboard.writeText(cleanedResume);
             setIsCopied(true);
         }
     }
 
     const handleSaveAsDocx = () => {
-        if (!resume) return;
+        if (!cleanedResume) return;
         
+        const caseTypeLabel = caseDetails ? caseTypeLabels[caseDetails.caseType] || 'Eksekusi' : 'Eksekusi';
+        const applicantName = caseDetails ? caseDetails.executionApplicant.trim() || 'Pemohon' : 'Pemohon';
+        const filename = `Resume - ${caseTypeLabel} - ${applicantName}.docx`;
+
+
         const signatoryTitles = [
             'Panitera Muda Perdata,',
             'Plh. Panitera,',
@@ -36,53 +50,106 @@ const ResumeOutput: React.FC<ResumeOutputProps> = ({ resume, isLoading, error })
             'Ketua Pengadilan Negeri Bandung,',
         ];
 
-        const lines = resume.split('\n');
+        const signatoryNames = [
+            caseDetails.kpnName,
+            caseDetails.paniteraName,
+            caseDetails.plhPaniteraName,
+            caseDetails.panmudName,
+        ].filter(Boolean);
+        
+        const lines = cleanedResume.split('\n');
         const paragraphs: Paragraph[] = [];
+        
+        const pemohonRegex = /, sebagai Pemohon Eksekusi;$/;
+        const termohonRegex = /, sebagai Termohon Eksekusi;$/;
+        const melawanString = 'Melawan';
+
+        const mainNumberedListRegex = /^\d+\.\s+/;
+        const letteredListRegex = /^[a-z]\.\s+/;
+        const bulletListRegex = /^-\s+/;
+        
+        let applyTelaahIndent = false;
+        let titleFound = false;
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             const trimmedLine = line.trim();
 
-            if (trimmedLine === 'RESUME PERKARA EKSEKUSI') {
-                paragraphs.push(new Paragraph({
-                    children: [new TextRun({ text: trimmedLine, bold: true })],
-                    alignment: AlignmentType.CENTER,
-                    spacing: { after: 360 }, // Add space after title
-                }));
-                continue;
-            }
-
-            // Check if it's a signatory title
-            if (signatoryTitles.includes(trimmedLine)) {
-                paragraphs.push(new Paragraph({
-                    text: trimmedLine,
-                    alignment: AlignmentType.CENTER,
-                }));
-                
-                // The name is expected after some blank lines, typically 3 lines later in the raw text
-                if (i + 3 < lines.length) {
-                    // Add the blank lines as empty paragraphs for spacing
-                    paragraphs.push(new Paragraph({ text: lines[i+1] }));
-                    paragraphs.push(new Paragraph({ text: lines[i+2] }));
-
-                    // Add the centered name paragraph
+            if (!titleFound) {
+                if (trimmedLine) { // This is the first non-empty line
                     paragraphs.push(new Paragraph({
-                        text: lines[i+3].trim(),
+                        children: [new TextRun({ text: trimmedLine, bold: true })],
                         alignment: AlignmentType.CENTER,
+                        spacing: { after: 360 },
                     }));
-                    
-                    // Skip the lines we've just processed
-                    i += 3;
+                    titleFound = true;
+                } else { // This is an empty line before the title
+                    paragraphs.push(new Paragraph({ text: '' }));
                 }
+                continue; // Move to the next line
+            }
+
+            const isSignatoryTitle = signatoryTitles.includes(trimmedLine);
+            const isSignatoryName = signatoryNames.includes(trimmedLine);
+
+            if (pemohonRegex.test(trimmedLine) || termohonRegex.test(trimmedLine) || trimmedLine === melawanString) {
+                paragraphs.push(new Paragraph({
+                    children: [new TextRun(trimmedLine)],
+                    alignment: AlignmentType.CENTER,
+                }));
+                applyTelaahIndent = false;
                 continue;
             }
 
-            // Default: Justified text for all other lines
-            if(trimmedLine) { // only add non-empty lines
+            if (isSignatoryTitle || isSignatoryName) {
                 paragraphs.push(new Paragraph({
-                    text: trimmedLine,
+                    children: [new TextRun(trimmedLine)],
+                    alignment: AlignmentType.CENTER,
+                }));
+                applyTelaahIndent = false;
+                continue;
+            }
+            
+            if (mainNumberedListRegex.test(trimmedLine)) {
+                const text = trimmedLine.replace(mainNumberedListRegex, '');
+                paragraphs.push(new Paragraph({
+                    children: [new TextRun(text)],
+                    numbering: { reference: "default-numbering", level: 0 },
                     alignment: AlignmentType.JUSTIFIED,
                 }));
+
+                if (text.startsWith('Hasil Penelaahan Panitera') || text.startsWith('Pertimbangan Ketua Pengadilan Negeri Bandung')) {
+                    applyTelaahIndent = true;
+                } else {
+                    applyTelaahIndent = false;
+                }
+            } else if (letteredListRegex.test(trimmedLine)) {
+                 paragraphs.push(new Paragraph({
+                    children: [new TextRun(trimmedLine.replace(letteredListRegex, ''))],
+                    numbering: { reference: "default-numbering", level: 1 },
+                    alignment: AlignmentType.JUSTIFIED,
+                }));
+                applyTelaahIndent = false;
+            } else if (bulletListRegex.test(trimmedLine)) {
+                 paragraphs.push(new Paragraph({
+                    children: [new TextRun(trimmedLine.replace(bulletListRegex, ''))],
+                    numbering: { reference: "default-numbering", level: 2 },
+                    alignment: AlignmentType.JUSTIFIED,
+                }));
+                applyTelaahIndent = false;
+            } else if (applyTelaahIndent && trimmedLine) {
+                 paragraphs.push(new Paragraph({
+                    children: [new TextRun(trimmedLine)],
+                    alignment: AlignmentType.JUSTIFIED,
+                    indent: { left: 720 },
+                }));
+            } else if(trimmedLine) {
+                paragraphs.push(new Paragraph({
+                    children: [new TextRun(trimmedLine)],
+                    alignment: AlignmentType.JUSTIFIED,
+                }));
+            } else {
+                paragraphs.push(new Paragraph({ text: '' }));
             }
         }
 
@@ -92,10 +159,40 @@ const ResumeOutput: React.FC<ResumeOutputProps> = ({ resume, isLoading, error })
                     document: {
                         run: {
                             font: 'Arial',
-                            size: 24, // 12pt (size is in half-points)
+                            size: 24, // 12pt
                         },
                     },
                 },
+            },
+            numbering: {
+                config: [
+                    {
+                        reference: 'default-numbering',
+                        levels: [
+                            {
+                                level: 0,
+                                format: 'decimal',
+                                text: '%1.',
+                                alignment: AlignmentType.START,
+                                style: { paragraph: { indent: { left: 360, hanging: 360 } } },
+                            },
+                            {
+                                level: 1,
+                                format: 'lowerLetter',
+                                text: '%2.',
+                                alignment: AlignmentType.START,
+                                style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+                            },
+                            {
+                                level: 2,
+                                format: 'bullet',
+                                text: '•',
+                                alignment: AlignmentType.START,
+                                style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+                            },
+                        ],
+                    },
+                ],
             },
             sections: [{
                 children: paragraphs,
@@ -103,7 +200,7 @@ const ResumeOutput: React.FC<ResumeOutputProps> = ({ resume, isLoading, error })
         });
 
         Packer.toBlob(doc).then((blob) => {
-            saveAs(blob, 'resume-perkara-eksekusi.docx');
+            saveAs(blob, filename);
         });
     };
 
@@ -126,7 +223,7 @@ const ResumeOutput: React.FC<ResumeOutputProps> = ({ resume, isLoading, error })
                 </div>
             )
         }
-        if (resume) {
+        if (cleanedResume) {
             return (
                 <div className="relative">
                     <div className="absolute top-4 right-4 flex items-center gap-2">
@@ -146,7 +243,7 @@ const ResumeOutput: React.FC<ResumeOutputProps> = ({ resume, isLoading, error })
                         </button>
                     </div>
                     <pre className="whitespace-pre-wrap break-words font-serif text-base leading-relaxed p-6">
-                        {resume}
+                        {cleanedResume}
                     </pre>
                 </div>
             )
