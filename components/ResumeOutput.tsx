@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Packer, Document, Paragraph } from 'docx';
+import { Packer, Document, Paragraph, TextRun, AlignmentType } from 'docx';
 import saveAs from 'file-saver';
 import { CopyIcon, CheckIcon, WarningIcon, SaveIcon } from './Icons';
 
@@ -29,14 +28,76 @@ const ResumeOutput: React.FC<ResumeOutputProps> = ({ resume, isLoading, error })
 
     const handleSaveAsDocx = () => {
         if (!resume) return;
+        
+        const signatoryTitles = [
+            'Panitera Muda Perdata,',
+            'Plh. Panitera,',
+            'Panitera,',
+            'Ketua Pengadilan Negeri Bandung,',
+        ];
 
-        const paragraphs = resume.split('\n').map(
-            (text) => new Paragraph({ text })
-        );
+        const lines = resume.split('\n');
+        const paragraphs: Paragraph[] = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const trimmedLine = line.trim();
+
+            if (trimmedLine === 'RESUME PERKARA EKSEKUSI') {
+                paragraphs.push(new Paragraph({
+                    children: [new TextRun({ text: trimmedLine, bold: true })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 360 }, // Add space after title
+                }));
+                continue;
+            }
+
+            // Check if it's a signatory title
+            if (signatoryTitles.includes(trimmedLine)) {
+                paragraphs.push(new Paragraph({
+                    text: trimmedLine,
+                    alignment: AlignmentType.CENTER,
+                }));
+                
+                // The name is expected after some blank lines, typically 3 lines later in the raw text
+                if (i + 3 < lines.length) {
+                    // Add the blank lines as empty paragraphs for spacing
+                    paragraphs.push(new Paragraph({ text: lines[i+1] }));
+                    paragraphs.push(new Paragraph({ text: lines[i+2] }));
+
+                    // Add the centered name paragraph
+                    paragraphs.push(new Paragraph({
+                        text: lines[i+3].trim(),
+                        alignment: AlignmentType.CENTER,
+                    }));
+                    
+                    // Skip the lines we've just processed
+                    i += 3;
+                }
+                continue;
+            }
+
+            // Default: Justified text for all other lines
+            if(trimmedLine) { // only add non-empty lines
+                paragraphs.push(new Paragraph({
+                    text: trimmedLine,
+                    alignment: AlignmentType.JUSTIFIED,
+                }));
+            }
+        }
 
         const doc = new Document({
+            styles: {
+                default: {
+                    document: {
+                        run: {
+                            font: 'Arial',
+                            size: 24, // 12pt (size is in half-points)
+                        },
+                    },
+                },
+            },
             sections: [{
-                properties: {},
                 children: paragraphs,
             }],
         });
@@ -94,7 +155,7 @@ const ResumeOutput: React.FC<ResumeOutputProps> = ({ resume, isLoading, error })
             <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center p-8">
                 <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2-2z" />
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-slate-700">Resume Akan Ditampilkan Disini</h3>

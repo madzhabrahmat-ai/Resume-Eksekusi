@@ -3,48 +3,61 @@ import type { CaseDetails } from '../types';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
-// Consolidated and robust date formatting function.
-// It directly converts YYYY-MM-DD to DD/MM/YYYY and handles other cases gracefully.
-const ensureDDMMYYYY = (dateString: string): string => {
+// New date formatting function to convert to long Indonesian date format.
+const formatDateToIndonesianLong = (dateString: string): string => {
     if (!dateString) return '';
     
-    // Primary case: input from date picker is YYYY-MM-DD
+    const months = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    let date: Date;
+
+    // Handles YYYY-MM-DD from date picker
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-        const [year, month, day] = dateString.split('-');
-        return `${day}/${month}/${year}`;
+        // Appending T00:00:00 to ensure it's parsed as local time, not UTC
+        date = new Date(`${dateString}T00:00:00`);
     }
-
-    // Fallback: if it's somehow already in DD/MM/YYYY, leave it.
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
-        return dateString;
+    // Handles DD/MM/YYYY for the current date
+    else if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+        const [day, month, year] = dateString.split('/');
+        date = new Date(`${year}-${month}-${day}T00:00:00`);
+    } else {
+        // If the format is unknown or invalid, return an empty string.
+        return '';
     }
-
-    // If the format is unknown or invalid, return an empty string to prevent errors.
-    return '';
+    
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${day} ${month} ${year}`;
 }
 
 
 export async function generateResume(details: CaseDetails): Promise<string> {
-    // Create a new object with all dates guaranteed to be in dd/mm/yyyy format or empty string
-    const d = {
-        ...details,
-        powerOfAttorneyDate: ensureDDMMYYYY(details.powerOfAttorneyDate),
-        pnDate: ensureDDMMYYYY(details.pnDate),
-        ptDate: ensureDDMMYYYY(details.ptDate),
-        maDate: ensureDDMMYYYY(details.maDate),
-        pkDate: ensureDDMMYYYY(details.pkDate),
-        lelangDate: ensureDDMMYYYY(details.lelangDate),
-        shtDate: ensureDDMMYYYY(details.shtDate),
-        aphtDate: ensureDDMMYYYY(details.aphtDate),
-    };
-    
-  let prompt = '';
-
   const today = new Date();
   const day = String(today.getDate()).padStart(2, '0');
-  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
   const year = today.getFullYear();
-  const formattedDate = `${day}/${month}/${year}`;
+  const dateForFormatting = `${day}/${month}/${year}`;
+  const formattedDate = formatDateToIndonesianLong(dateForFormatting);
+
+  // Create a new object with all dates guaranteed to be in the long Indonesian format
+  const d = {
+      ...details,
+      powerOfAttorneyDate: formatDateToIndonesianLong(details.powerOfAttorneyDate),
+      pnDate: formatDateToIndonesianLong(details.pnDate),
+      ptDate: formatDateToIndonesianLong(details.ptDate),
+      maDate: formatDateToIndonesianLong(details.maDate),
+      pkDate: formatDateToIndonesianLong(details.pkDate),
+      lelangDate: formatDateToIndonesianLong(details.lelangDate),
+      shtDate: formatDateToIndonesianLong(details.shtDate),
+      aphtDate: formatDateToIndonesianLong(details.aphtDate),
+  };
+    
+  let prompt = '';
 
   const applicant = d.applicantAttorney && d.powerOfAttorneyDate
     ? `${d.executionApplicant} / Kuasanya ${d.applicantAttorney} berdasarkan Surat Kuasa tanggal ${d.powerOfAttorneyDate}`
